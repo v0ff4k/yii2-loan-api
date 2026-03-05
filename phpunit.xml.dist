@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         stopOnFailure="false"
+         verbose="true">
+
+    <testsuites>
+        <testsuite name="Unit">
+            <directory suffix="Test.php">tests/unit</directory>
+        </testsuite>
+    </testsuites>
+
+    <php>
+        <env name="YII_ENV" value="test"/>
+        <env name="DB_HOST" value="db"/>
+        <env name="DB_PORT" value="5432"/>
+        <env name="DB_NAME" value="loans"/>
+        <env name="DB_USER" value="user"/>
+        <env name="DB_PASS" value="password"/>
+    </php>
+</phpunit>

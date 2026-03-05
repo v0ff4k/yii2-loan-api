@@ -1,0 +1,51 @@
+{
+  "name": "v0ff4k/yii2-loan-api",
+  "description": "Loan API Application on Yii2",
+  "type": "project",
+  "license": "MIT",
+  "minimum-stability": "stable",
+  "require": {
+    "php": ">=8.0.0",
+    "yiisoft/yii2": "~2.0.45"
+  },
+  "require-dev": {
+    "yiisoft/yii2-debug": "~2.1.0",
+    "yiisoft/yii2-gii": "~2.2.0",
+    "phpunit/phpunit": "^9.5",
+    "codeception/codeception": "^5.0",
+    "codeception/module-asserts": "^3.0",
+    "codeception/module-phpbrowser": "^3.0",
+    "codeception/module-rest": "^3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "app\\": "src/"
+    }
+  },
+  "config": {
+    "process-timeout": 1800,
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true
+    },
+    "optimize-autoloader": true,
+    "sort-packages": true
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "yii\\composer\\Installer::postInstall"
+    ]
+  },
+  "extra": {
+    "yii\\composer\\Installer::postInstall": {
+      "generateCookieValidationKey": [
+        "src/config/web.php"
+      ]
+    }
+  },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://asset-packagist.org"
+    }
+  ]
+}

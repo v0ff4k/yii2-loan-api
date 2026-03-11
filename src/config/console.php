@@ -7,16 +7,13 @@ return [
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
     'controllerNamespace' => 'app\controllers',
-
-    // Явно подключаем модуль миграций
-    'modules' => [
+    'controllerMap' => [
         'migrate' => [
             'class' => 'yii\console\controllers\MigrateController',
             'migrationPath' => '@app/console/migrations',
             'migrationTable' => '{{%migration}}',
         ],
     ],
-
     'components' => [
         'db' => $db,
         'log' => [

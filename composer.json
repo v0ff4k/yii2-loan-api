@@ -5,17 +5,11 @@
   "license": "MIT",
   "minimum-stability": "stable",
   "require": {
-    "php": ">=8.0.0",
+    "php": ">=8.2.0",
     "yiisoft/yii2": "~2.0.45"
   },
   "require-dev": {
-    "yiisoft/yii2-debug": "~2.1.0",
-    "yiisoft/yii2-gii": "~2.2.0",
-    "phpunit/phpunit": "^9.5",
-    "codeception/codeception": "^5.0",
-    "codeception/module-asserts": "^3.0",
-    "codeception/module-phpbrowser": "^3.0",
-    "codeception/module-rest": "^3.0"
+    "phpunit/phpunit": "^9.5"
   },
   "autoload": {
     "psr-4": {
@@ -29,23 +23,5 @@
     },
     "optimize-autoloader": true,
     "sort-packages": true
-  },
-  "scripts": {
-    "post-install-cmd": [
-      "yii\\composer\\Installer::postInstall"
-    ]
-  },
-  "extra": {
-    "yii\\composer\\Installer::postInstall": {
-      "generateCookieValidationKey": [
-        "src/config/web.php"
-      ]
-    }
-  },
-  "repositories": [
-    {
-      "type": "composer",
-      "url": "https://asset-packagist.org"
-    }
-  ]
+  }
 }

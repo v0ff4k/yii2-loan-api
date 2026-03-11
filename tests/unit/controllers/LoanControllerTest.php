@@ -5,7 +5,7 @@ namespace tests\unit\controllers;
 use Yii;
 use PHPUnit\Framework\TestCase;
 use app\models\LoanRequest;
-use yii\web\NotFoundHttpException;
+use app\services\LoanService;
 
 class LoanControllerTest extends TestCase
 {
@@ -24,14 +24,22 @@ class LoanControllerTest extends TestCase
         $_FILES = [];
         $_SERVER['REQUEST_METHOD'] = 'GET';
 
-        //  ПЕРЕИНИЦИАЛИЗАЦИЯ REQUEST (вместо refresh())
-        // Создаём новый объект request чтобы сбросить кэш $_POST
+        // ПЕРЕИНИЦИАЛИЗАЦИЯ REQUEST
         Yii::$app->set('request', [
             'class' => 'yii\web\Request',
             'enableCsrfValidation' => false,
         ]);
 
         Yii::$app->request->enableCsrfValidation = false;
+    }
+
+    /**
+     * Создаёт контроллер с внедрением сервиса
+     */
+    private function createController(): \app\controllers\LoanController
+    {
+        $loanService = new LoanService();
+        return new \app\controllers\LoanController('loan', Yii::$app, $loanService);
     }
 
     /**
@@ -45,11 +53,10 @@ class LoanControllerTest extends TestCase
             'term' => 30
         ];
 
-        // Эмуляция POST запроса
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_POST = $postData;
 
-        $controller = new \app\controllers\LoanController('loan', Yii::$app);
+        $controller = $this->createController();
         $response = $controller->runAction('requests');
 
         $this->assertEquals(201, Yii::$app->response->statusCode);
@@ -57,7 +64,6 @@ class LoanControllerTest extends TestCase
         $this->assertArrayHasKey('id', $response);
         $this->assertGreaterThan(0, $response['id']);
 
-        // Проверка записи в БД
         $request = LoanRequest::findOne($response['id']);
         $this->assertNotNull($request);
         $this->assertEquals(1, $request->user_id);
@@ -70,25 +76,19 @@ class LoanControllerTest extends TestCase
      */
     public function testCreateRequestMissingFields()
     {
-        //  Добавить очистку перед тестом
         $_POST = [];
         $_GET = [];
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
-        $postData = [
-            'user_id' => 1
-            // amount и term отсутствуют
-        ];
-
+        $postData = ['user_id' => 1];
         $_POST = $postData;
 
-        //  Переинициализируем request после изменения $_POST
         Yii::$app->set('request', [
             'class' => 'yii\web\Request',
             'enableCsrfValidation' => false,
         ]);
 
-        $controller = new \app\controllers\LoanController('loan', Yii::$app);
+        $controller = $this->createController();
         $response = $controller->runAction('requests');
 
         $this->assertEquals(400, Yii::$app->response->statusCode);
@@ -100,7 +100,6 @@ class LoanControllerTest extends TestCase
      */
     public function testCreateRequestInvalidTypes()
     {
-        //  Добавить очистку перед тестом
         $_POST = [];
         $_GET = [];
         $_SERVER['REQUEST_METHOD'] = 'POST';
@@ -110,7 +109,6 @@ class LoanControllerTest extends TestCase
             'amount' => 'invalid',
             'term' => 'invalid'
         ];
-
         $_POST = $postData;
 
         Yii::$app->set('request', [
@@ -118,7 +116,7 @@ class LoanControllerTest extends TestCase
             'enableCsrfValidation' => false,
         ]);
 
-        $controller = new \app\controllers\LoanController('loan', Yii::$app);
+        $controller = $this->createController();
         $response = $controller->runAction('requests');
 
         $this->assertEquals(400, Yii::$app->response->statusCode);
@@ -130,7 +128,6 @@ class LoanControllerTest extends TestCase
      */
     public function testCreateRequestWithExistingApproved()
     {
-        // Создаем одобренную заявку
         $existingRequest = new LoanRequest();
         $existingRequest->user_id = 1;
         $existingRequest->amount = 1000;
@@ -138,7 +135,6 @@ class LoanControllerTest extends TestCase
         $existingRequest->status = LoanRequest::STATUS_APPROVED;
         $existingRequest->save();
 
-        // Пытаемся создать новую
         $postData = [
             'user_id' => 1,
             'amount' => 3000,
@@ -148,7 +144,7 @@ class LoanControllerTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_POST = $postData;
 
-        $controller = new \app\controllers\LoanController('loan', Yii::$app);
+        $controller = $this->createController();
         $response = $controller->runAction('requests');
 
         $this->assertEquals(400, Yii::$app->response->statusCode);
@@ -160,7 +156,6 @@ class LoanControllerTest extends TestCase
      */
     public function testCreateRequestWithExistingDeclined()
     {
-        // Создаем отклоненную заявку
         $existingRequest = new LoanRequest();
         $existingRequest->user_id = 1;
         $existingRequest->amount = 1000;
@@ -168,7 +163,6 @@ class LoanControllerTest extends TestCase
         $existingRequest->status = LoanRequest::STATUS_DECLINED;
         $existingRequest->save();
 
-        // Пытаемся создать новую
         $postData = [
             'user_id' => 1,
             'amount' => 3000,
@@ -178,7 +172,7 @@ class LoanControllerTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_POST = $postData;
 
-        $controller = new \app\controllers\LoanController('loan', Yii::$app);
+        $controller = $this->createController();
         $response = $controller->runAction('requests');
 
         $this->assertEquals(201, Yii::$app->response->statusCode);
@@ -190,7 +184,6 @@ class LoanControllerTest extends TestCase
      */
     public function testProcessorEndpoint()
     {
-        // Создаем несколько pending заявок
         for ($i = 1; $i <= 3; $i++) {
             $request = new LoanRequest();
             $request->user_id = $i;
@@ -203,17 +196,16 @@ class LoanControllerTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_GET = ['delay' => 0];
 
-        $controller = new \app\controllers\LoanController('loan', Yii::$app);
+        $controller = $this->createController();
         $response = $controller->runAction('processor');
 
         $this->assertEquals(200, Yii::$app->response->statusCode);
         $this->assertTrue($response['result']);
 
-        // Проверяем что все заявки обработаны (статус изменился)
         $pendingCount = LoanRequest::find()
             ->where(['status' => LoanRequest::STATUS_PENDING])
             ->count();
-        
+
         $this->assertEquals(0, $pendingCount);
     }
 
@@ -225,7 +217,7 @@ class LoanControllerTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_GET = ['delay' => 0];
 
-        $controller = new \app\controllers\LoanController('loan', Yii::$app);
+        $controller = $this->createController();
         $response = $controller->runAction('processor');
 
         $this->assertEquals(200, Yii::$app->response->statusCode);
@@ -237,7 +229,6 @@ class LoanControllerTest extends TestCase
      */
     public function testProcessorIgnoresNonPendingRequests()
     {
-        // Создаем заявки разных статусов
         $request1 = new LoanRequest();
         $request1->user_id = 1;
         $request1->amount = 1000;
@@ -255,7 +246,7 @@ class LoanControllerTest extends TestCase
         $approvedBefore = LoanRequest::find()
             ->where(['status' => LoanRequest::STATUS_APPROVED])
             ->count();
-        
+
         $declinedBefore = LoanRequest::find()
             ->where(['status' => LoanRequest::STATUS_DECLINED])
             ->count();
@@ -263,14 +254,13 @@ class LoanControllerTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_GET = ['delay' => 0];
 
-        $controller = new \app\controllers\LoanController('loan', Yii::$app);
+        $controller = $this->createController();
         $controller->runAction('processor');
 
-        // Статусы не должны измениться
         $approvedAfter = LoanRequest::find()
             ->where(['status' => LoanRequest::STATUS_APPROVED])
             ->count();
-        
+
         $declinedAfter = LoanRequest::find()
             ->where(['status' => LoanRequest::STATUS_DECLINED])
             ->count();

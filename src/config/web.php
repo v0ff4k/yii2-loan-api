@@ -1,6 +1,7 @@
 <?php
 
-// for optimize, getrid from vars !
+use app\services\LoanService;
+
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
 
@@ -12,13 +13,12 @@ return [
         'request' => [
             'parsers' => ['application/json' => 'yii\web\JsonParser'],
             'cookieValidationKey' => 'loan-api-secret-key-12345',
-            'enableCsrfValidation' => false,  // ← Отключаем CSRF для API!
+            'enableCsrfValidation' => false,
         ],
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
-                // Строгие правила с методом (Глагол + Путь = Роут)
                 ['pattern' => 'requests', 'route' => 'loan/requests', 'verb' => 'POST'],
                 ['pattern' => 'processor', 'route' => 'loan/processor', 'verb' => 'GET'],
             ],
@@ -27,7 +27,17 @@ return [
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
             'targets' => [
-                ['class' => 'yii\log\FileTarget', 'levels' => ['error', 'warning']],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'levels' => ['error', 'warning', 'info'],
+                    'categories' => ['application'],
+                ],
+            ],
+        ],
+        'container' => [
+            'class' => 'yii\di\Container',
+            'definitions' => [
+                LoanService::class => LoanService::class,
             ],
         ],
     ],

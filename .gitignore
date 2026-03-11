@@ -11,3 +11,6 @@ tests/_output/
 vendor
 composer.phar
 composer.lock
+
+# Environment
+.env

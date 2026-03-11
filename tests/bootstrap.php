@@ -6,7 +6,6 @@ defined('YII_ENV') or define('YII_ENV', 'test');
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../vendor/yiisoft/yii2/Yii.php';
 
-// Конфигурация для тестов
 $config = [
     'id' => 'loan-api-test',
     'basePath' => dirname(__DIR__) . '/src',
@@ -32,12 +31,11 @@ $config = [
             'targets' => [
                 [
                     'class' => 'yii\log\FileTarget',
-                    'levels' => ['error', 'warning'],
+                    'levels' => ['error', 'warning', 'info'],
                 ],
             ],
         ],
     ],
 ];
 
-// Инициализация приложения
 new yii\web\Application($config);

@@ -1,0 +1,13 @@
+.idea
+.git
+*.log
+node_modules/
+.dockerignore
+setup-project.sh
+setup-project.ps1
+tests/_output/
+
+# Composer
+vendor
+composer.phar
+composer.lock

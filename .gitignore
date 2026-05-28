@@ -1,4 +1,5 @@
-.idea
+/.*/
+mandatory_senior_checklist.md
 .git
 *.log
 node_modules/

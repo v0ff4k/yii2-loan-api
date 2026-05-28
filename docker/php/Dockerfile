@@ -1,7 +1,13 @@
-FROM php:8.2-fpm-bullseye
+FROM php:8.4-fpm-bullseye
 
 # Системные зависимости
 RUN apt-get update && apt-get install -y \
+    libxml2-dev \
+    && docker-php-ext-install -j$(nproc) \
+    dom \
+    mbstring \
+    xml \
+    xmlwriter \
     git \
     unzip \
     libpq-dev \
